@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" >
+
+    <servlet>
+        <servlet-name>area</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.AreaServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>bookmark</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.BookmarkServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>tree</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.TreeServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>stat</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.StatServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>locations</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.MakeLocations</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>adjust</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.SetPointAdjustServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>area</servlet-name>
+        <url-pattern>/servlet/area/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>bookmark</servlet-name>
+        <url-pattern>/servlet/bookmark/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>tree</servlet-name>
+        <url-pattern>/servlet/tree/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>stat</servlet-name>
+        <url-pattern>/servlet/stat/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>locations</servlet-name>
+        <url-pattern>/servlet/locations/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>adjust</servlet-name>
+        <url-pattern>/servlet/adjust/*</url-pattern>
+    </servlet-mapping>
+
+    <security-constraint>
+       <web-resource-collection>
+          <web-resource-name>WEB</web-resource-name>
+          <url-pattern>/*</url-pattern>
+          <http-method>GET</http-method>
+          <http-method>POST</http-method>
+       </web-resource-collection>
+       <auth-constraint>
+           <!-- The following functional privilege is listed as "Access User Category 5" -->
+          <role-name>view_user_category_5</role-name>
+       </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+       <auth-method>BASIC</auth-method>
+    </login-config>
+
+</web-app>
