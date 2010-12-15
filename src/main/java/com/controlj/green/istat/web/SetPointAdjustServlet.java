@@ -22,7 +22,6 @@ public class SetPointAdjustServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setHeader("Expires", "Wed, 01 Jan 2003 12:00:00 GMT");
         resp.setHeader("Cache-Control", "no-cache");
-        ServletOutputStream out = resp.getOutputStream();
 
         String location = req.getParameter("loc");
         String newValue = req.getParameter("value");
@@ -32,13 +31,13 @@ public class SetPointAdjustServlet extends HttpServlet {
             throw new ServletException("Error adjusting setpoint, location or value not set");
         }
 
-        writeAdjustment(location, newValue);
+        writeAdjustment(location, newValue, req);
     }
 
-    private void writeAdjustment(final String locationString, final String newValue) throws ServletException {
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
+    private void writeAdjustment(final String locationString, final String newValue, HttpServletRequest req) throws ServletException {
 
         try {
+            SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
             connection.runWriteAction(FieldAccessFactory.newFieldAccess(), "Setpoint adjusted from iStat", new WriteAction() {
 
                 public void execute(@NotNull WritableSystemAccess access) throws Exception {

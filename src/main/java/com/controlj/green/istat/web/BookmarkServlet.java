@@ -1,7 +1,7 @@
 package com.controlj.green.istat.web;
 
+import com.controlj.green.addonsupport.InvalidConnectionRequestException;
 import com.controlj.green.addonsupport.access.*;
-import com.google.gson.Gson;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -9,9 +9,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
 
 // todo - don't think this is used anymore - investigate and remove
 
@@ -28,7 +26,7 @@ public class BookmarkServlet extends HttpServlet {
         resp.setHeader("Cache-Control", "no-cache");
         ServletOutputStream out = resp.getOutputStream();
         try {
-            writeLocations(out, req.getParameterValues("bookmarks"));
+            writeLocations(out, req.getParameterValues("bookmarks"), req);
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -41,10 +39,10 @@ public class BookmarkServlet extends HttpServlet {
         */
     }
 
-    public void writeLocations(final ServletOutputStream out, final String locations[]) throws IOException, SystemException, ActionExecutionException {
+    public void writeLocations(final ServletOutputStream out, final String locations[], HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
         out.println("[");
 
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
+        SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
         connection.runReadAction(new ReadAction(){
             public void execute(@NotNull SystemAccess access) throws Exception {
@@ -62,40 +60,6 @@ public class BookmarkServlet extends HttpServlet {
 
 
         out.println("]");
-    }
-
-    public String[] getLocations(String bms) throws Exception
-    {
-        Gson gson = new Gson();
-        if (bms != null) {
-            return gson.fromJson(bms, String[].class);
-        }
-        else {
-            return new String[0];
-        }
-    }
-
-    public ArrayList<String> getLocationsFromDataStore() throws Exception
-    {
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
-
-        return connection.runReadAction(new ReadActionResult<ArrayList<String>>() {
-            public ArrayList<String> execute(@NotNull SystemAccess access) throws Exception {
-                DataStore ds = access.getSystemDataStore("locations");
-                BufferedReader reader = ds.getReader();
-                ArrayList<String> result = new ArrayList<String>();
-                String line =null;
-                do {
-                    line = reader.readLine();
-                    if (line != null) {
-                        result.add(line);
-                    }
-                } while (line != null);
-
-                reader.close();
-                return result;
-            }
-        });
     }
 
 }

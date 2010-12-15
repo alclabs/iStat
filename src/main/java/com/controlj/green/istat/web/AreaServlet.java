@@ -1,5 +1,6 @@
 package com.controlj.green.istat.web;
 
+import com.controlj.green.addonsupport.InvalidConnectionRequestException;
 import com.controlj.green.addonsupport.access.*;
 import com.controlj.green.addonsupport.access.aspect.SetPoint;
 import com.controlj.green.addonsupport.access.util.Acceptors;
@@ -10,10 +11,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 //todo - is this used?
 public class AreaServlet extends HttpServlet {
@@ -28,7 +28,7 @@ public class AreaServlet extends HttpServlet {
         resp.setHeader("Cache-Control", "no-cache");
         ServletOutputStream out = resp.getOutputStream();
         try {
-            writeLocations(out, getLocations());
+            writeLocations(out, getLocations(req), req);
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -41,10 +41,10 @@ public class AreaServlet extends HttpServlet {
         */
     }
 
-    public void writeLocations(final ServletOutputStream out, final ArrayList<String> locations) throws IOException, SystemException, ActionExecutionException {
+    public void writeLocations(final ServletOutputStream out, final ArrayList<String> locations, HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
         out.println("[");
 
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
+        SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
         connection.runReadAction(new ReadAction(){
             public void execute(@NotNull SystemAccess access) throws Exception {
@@ -64,9 +64,9 @@ public class AreaServlet extends HttpServlet {
         out.println("]");
     }
 
-    public ArrayList<String> getLocations() throws Exception
+    public ArrayList<String> getLocations(HttpServletRequest req) throws Exception
     {
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
+        SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
         return connection.runReadAction(new ReadActionResult<ArrayList<String>>() {
             public ArrayList<String> execute(@NotNull SystemAccess access) throws Exception {
@@ -75,29 +75,6 @@ public class AreaServlet extends HttpServlet {
                 for (SetPoint sp : sps) {
                     result.add(sp.getLocation().getParent().getPersistentLookupString(false));
                 }
-                return result;
-            }
-        });
-    }
-
-    public ArrayList<String> getLocationsFromDataStore() throws Exception
-    {
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
-
-        return connection.runReadAction(new ReadActionResult<ArrayList<String>>() {
-            public ArrayList<String> execute(@NotNull SystemAccess access) throws Exception {
-                DataStore ds = access.getSystemDataStore("locations");
-                BufferedReader reader = ds.getReader();
-                ArrayList<String> result = new ArrayList<String>();
-                String line =null;
-                do {
-                    line = reader.readLine();
-                    if (line != null) {
-                        result.add(line);
-                    }
-                } while (line != null);
-
-                reader.close();
                 return result;
             }
         });

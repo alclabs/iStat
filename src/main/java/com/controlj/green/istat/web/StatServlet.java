@@ -1,5 +1,6 @@
 package com.controlj.green.istat.web;
 
+import com.controlj.green.addonsupport.InvalidConnectionRequestException;
 import com.controlj.green.addonsupport.access.*;
 import com.controlj.green.addonsupport.access.aspect.SetPoint;
 import com.controlj.green.addonsupport.access.aspect.SetPointAdjust;
@@ -27,7 +28,7 @@ public class StatServlet extends HttpServlet {
         ServletOutputStream out = resp.getOutputStream();
 
         try {
-            writeStats(out, req.getParameter("loc"));
+            writeStats(out, req.getParameter("loc"), req);
         } catch (Exception e) {
             resp.sendError(500, e.getMessage());
             //throw new ServletException(e);
@@ -45,10 +46,10 @@ public class StatServlet extends HttpServlet {
         */
     }
 
-    public void writeStats(final ServletOutputStream out, final String location) throws IOException, SystemException, ActionExecutionException {
+    public void writeStats(final ServletOutputStream out, final String location, HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
         out.println("[{");
 
-        SystemConnection connection = DirectAccess.getDirectAccess().getRootSystemConnection();
+        SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
         connection.runReadAction(FieldAccessFactory.newFieldAccess(), new ReadAction(){
             public void execute(@NotNull SystemAccess access) throws Exception {
