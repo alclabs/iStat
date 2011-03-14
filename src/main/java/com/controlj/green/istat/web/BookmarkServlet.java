@@ -62,22 +62,22 @@ public class BookmarkServlet extends HttpServlet {
     public void writeLocations(final ServletOutputStream out, final String locations[], HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
         out.println("[");
 
-        SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
+        if (locations != null) {
+            SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
-        connection.runReadAction(new ReadAction(){
-            public void execute(@NotNull SystemAccess access) throws Exception {
-                for (String location : locations) {
-                    out.print("{");
-                    Location loc = access.getGeoRoot().getTree().resolve(location);
-                    out.print("display:'"+loc.getDisplayName()+"', ");
-                    out.print("id:'"+location+"'");
-                    out.println("},");
+            connection.runReadAction(new ReadAction(){
+                public void execute(@NotNull SystemAccess access) throws Exception {
+                    for (String location : locations) {
+                        out.print("{");
+                        Location loc = access.getGeoRoot().getTree().resolve(location);
+                        out.print("display:'"+loc.getDisplayName()+"', ");
+                        out.print("id:'"+location+"'");
+                        out.println("},");
+                    }
+
                 }
-
-            }
-        });
-
-
+            });
+        }
 
         out.println("]");
     }

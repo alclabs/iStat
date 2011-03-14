@@ -29,6 +29,9 @@ import com.controlj.green.addonsupport.access.aspect.SetPointAdjust;
 import com.controlj.green.addonsupport.access.util.Acceptors;
 import com.controlj.green.addonsupport.access.util.LocationSort;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -36,6 +39,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 
 public class TreeServlet extends HttpServlet {
@@ -67,7 +71,7 @@ public class TreeServlet extends HttpServlet {
     }
 
     public void writeLevel(final ServletOutputStream out, final String location, HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
-        out.println("[");
+        final JSONArray arrayData = new JSONArray();
 
         SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
@@ -88,17 +92,23 @@ public class TreeServlet extends HttpServlet {
                     if (!acceptor.accept(nextLoc)) {
                         continue;
                     }
-                    out.print("{");
-                    out.print("display:'"+nextLoc.getDisplayName()+"', ");
-                    out.print("id:'"+nextLoc.getPersistentLookupString(false)+"', ");
-                    out.print("area: "+ (nextLoc.getType() == LocationType.Area));
-                    out.println("},");
+                    JSONObject next = new JSONObject();
+                    next.put("display", nextLoc.getDisplayName());
+                    next.put("id", nextLoc.getPersistentLookupString(false));
+                    next.put("area", (nextLoc.getType() == LocationType.Area));
+                    arrayData.put(next);
                 }
-
             }
         });
 
-        out.println("]");        
+        try {
+            PrintWriter writer = new PrintWriter(out);
+            arrayData.write(writer);
+            writer.flush();
+        } catch (JSONException e) {
+            System.err.println("iStat Addon: Unexpected exception:");
+            e.printStackTrace();
+        }
     }
 
     private class HasDecendentAspects
