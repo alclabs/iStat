@@ -85,7 +85,7 @@ public class TreeServlet extends HttpServlet {
                     parent = access.getGeoRoot().getTree().resolve(location);
                 }
                 Collection<Location> childrenLocs = parent.getChildren(LocationSort.PRESENTATION);
-                HasDecendentAspects acceptor = new HasDecendentAspects(SetPoint.class, SetPointAdjust.class);
+                HasDecendentAspectsAcceptor acceptor = new HasDecendentAspectsAcceptor(SetPoint.class, SetPointAdjust.class);
 
                 for (Location nextLoc : childrenLocs)
                 {
@@ -111,18 +111,45 @@ public class TreeServlet extends HttpServlet {
         }
     }
 
-    private class HasDecendentAspects
+    private class HasDecendentAspectsAcceptor
     {
+        private HasAllAspectsAcceptor acceptor;
+
+        HasDecendentAspectsAcceptor(Class<? extends Aspect>... aspects)
+        {
+            acceptor = new HasAllAspectsAcceptor(aspects);
+        }
+
+        public boolean accept(@NotNull Location loc) {
+            if (acceptor.accept(loc)) {
+                return true;
+            } else if (loc.getType() == LocationType.Microblock) {
+                return false;
+            } else {
+                Collection<Location> children = loc.getChildren();
+                for (Location child : children) {
+                    if (accept(child)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+    }
+
+
+    private class HasAllAspectsAcceptor {
         Class<? extends Aspect> testAspects[];
 
-        HasDecendentAspects(Class<? extends Aspect>... aspects)
+        HasAllAspectsAcceptor(Class<? extends Aspect>... aspects)
         {
             this.testAspects = aspects;
         }
 
         public boolean accept(@NotNull Location loc) {
             for (Class<? extends Aspect> testAspect : testAspects) {
-                if (loc.find(testAspect, Acceptors.acceptAll()).isEmpty()) {
+                if (!loc.hasAspect(testAspect)) {
                     return false;
                 }
             }
@@ -130,5 +157,6 @@ public class TreeServlet extends HttpServlet {
         }
     }
 
+    
 
 }
