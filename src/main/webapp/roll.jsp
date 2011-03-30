@@ -96,8 +96,6 @@
             width: 100%;
             min-height: 420px !important;
         }
-
-
     </style>
 
     <script type="application/x-javascript">

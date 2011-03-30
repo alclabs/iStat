@@ -22,12 +22,17 @@
 
 package com.controlj.green.istat.web;
 
+import com.controlj.green.addonsupport.AddOnInfo;
+import com.controlj.green.addonsupport.FileLogger;
 import com.controlj.green.addonsupport.InvalidConnectionRequestException;
 import com.controlj.green.addonsupport.access.*;
 import com.controlj.green.addonsupport.access.aspect.SetPoint;
 import com.controlj.green.addonsupport.access.aspect.SetPointAdjust;
 import com.controlj.green.addonsupport.access.util.Acceptors;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -35,9 +40,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Collection;
 
 public class StatServlet extends HttpServlet {
+    private static final DecimalFormat nFormat = new DecimalFormat("#.0");
+
     public StatServlet() {
         super();
     }
@@ -69,7 +79,7 @@ public class StatServlet extends HttpServlet {
     }
 
     public void writeStats(final ServletOutputStream out, final String location, HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
-        out.println("[{");
+        final JSONArray arrayData = new JSONArray();
 
         SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
 
@@ -88,17 +98,28 @@ public class StatServlet extends HttpServlet {
 
                 SetPoint setPoint = setPoints.iterator().next();
                 SetPointAdjust setPointAdjust = setPointAdjusts.iterator().next();
+                JSONObject next = new JSONObject();
 
-                out.println("hsp:" +    setPoint.getEffectiveHeating() + ", ");
-                out.println("csp:" +    setPoint.getEffectiveCooling() + ", ");
-                out.println("current:"+ setPoint.getZoneTemp()+",");
-                out.println("off:" +    setPointAdjust.getCoolingSetpointAdjust().getValueAsString() + ",");
-                out.println("lim:" +    setPointAdjust.getCoolingSetpointAdjust().getMaximum() + ",");
-                out.println("loc:'" +   location+"',");
+                next.put("hsp",         nFormat.format(setPoint.getEffectiveHeating()));
+                next.put("csp",         nFormat.format(setPoint.getEffectiveCooling()));
+                next.put("current",     nFormat.format(setPoint.getZoneTemp()));
+                next.put("off",         nFormat.format(setPointAdjust.getCoolingSetpointAdjust().getValue()));
+                next.put("lim",         nFormat.format(setPointAdjust.getCoolingSetpointAdjust().getMaximum()));
+                next.put("loc",         location);
+                next.put("adjustable",  setPointAdjust.getCoolingSetpointAdjust().isWritable());
+                arrayData.put(next);
             }
         });
 
-        out.println("}]");
+        try {
+            PrintWriter writer = new PrintWriter(out);
+            arrayData.write(writer);
+            writer.flush();
+        } catch (JSONException e) {
+            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
+            logger.println("Unexpected exception:");
+            logger.println(e);
+        }        
     }
 
 

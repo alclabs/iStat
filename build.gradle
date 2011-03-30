@@ -10,6 +10,7 @@ version = '0.8.1'
 dependencies {
    compile 'org.json:json:20080701'
 
+   providedCompile 'com.controlj.green:addonsupport-api-addon:1.1.0.+'
    providedCompile 'com.controlj.green:directaccess-api-addon:1.1.0.+'
    providedCompile 'javax.servlet:servlet-api:2.5'
 }

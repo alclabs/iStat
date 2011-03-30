@@ -23,6 +23,7 @@
 var timer;
 var statLoc;
 var data;
+var adjustable;
 
 var statbg = { top:80, left:20, width:30, height:300}
 
@@ -53,10 +54,11 @@ function update(sel, newText) {
 function render(statPars)
 {
     data = statPars;
-    data.top = Math.round(Number(data.csp) - Number(data.off) + data.lim + 1)
-    data.bottom = Math.round(Number(data.hsp) - Number(data.off) - data.lim - 1)
+    data.top = Math.round(Number(data.csp) - Number(data.off) + Number(data.lim) + 1)
+    data.bottom = Math.round(Number(data.hsp) - Number(data.off) - Number(data.lim) - 1)
 
 
+    adjustable = statPars.adjustable;
     update($('#hsp'),statPars.hsp);
     update($('#csp'),statPars.csp);
     update($('#current'),statPars.current);
@@ -115,7 +117,7 @@ $(document).ready(function() {
         if (timer) { clearInterval(timer); timer=null; }
         return true;
     })
-    $('#statbg').click(makeWheel)
+    $('#statbg').click(adjClick)
     .ajaxError(function(e, xhr, settings, exception) {
         //alert('in ajaxerror,url:'+settings.url)
         if (settings.url.indexOf('servlet/stat') == 0) {
@@ -123,6 +125,14 @@ $(document).ready(function() {
         }
     })    
 })
+
+function adjClick() {
+    if (adjustable) {
+        makeWheel()
+    } else {
+        alert("Setpoint Not Adjustable");
+    }
+}
 
 
 function refresh() {

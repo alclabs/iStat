@@ -22,9 +22,14 @@
 
 package com.controlj.green.istat.web;
 
+import com.controlj.green.addonsupport.AddOnInfo;
+import com.controlj.green.addonsupport.FileLogger;
 import com.controlj.green.addonsupport.InvalidConnectionRequestException;
 import com.controlj.green.addonsupport.access.*;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -32,6 +37,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class BookmarkServlet extends HttpServlet {
     public BookmarkServlet() {
@@ -60,7 +66,7 @@ public class BookmarkServlet extends HttpServlet {
     }
 
     public void writeLocations(final ServletOutputStream out, final String locations[], HttpServletRequest req) throws IOException, SystemException, ActionExecutionException, InvalidConnectionRequestException {
-        out.println("[");
+        final JSONArray arrayData = new JSONArray();
 
         if (locations != null) {
             SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
@@ -68,18 +74,25 @@ public class BookmarkServlet extends HttpServlet {
             connection.runReadAction(new ReadAction(){
                 public void execute(@NotNull SystemAccess access) throws Exception {
                     for (String location : locations) {
-                        out.print("{");
+                        JSONObject next = new JSONObject();
                         Location loc = access.getGeoRoot().getTree().resolve(location);
-                        out.print("display:'"+loc.getDisplayName()+"', ");
-                        out.print("id:'"+location+"'");
-                        out.println("},");
+                        next.put("display", loc.getDisplayName());
+                        next.put("id", location);
+                        arrayData.put(next);
                     }
-
                 }
             });
         }
 
-        out.println("]");
+        try {
+            PrintWriter writer = new PrintWriter(out);
+            arrayData.write(writer);
+            writer.flush();
+        } catch (JSONException e) {
+            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
+            logger.println("Unexpected exception:");
+            logger.println(e);
+        }
     }
 
 }
