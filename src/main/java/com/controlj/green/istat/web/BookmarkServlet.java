@@ -54,6 +54,9 @@ public class BookmarkServlet extends HttpServlet {
         try {
             writeLocations(out, req.getParameterValues("bookmarks"), req);
         } catch (Exception e) {
+            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
+            logger.println("Unexpected exception:");
+            logger.println(e);
             throw new ServletException(e);
         }
         /*

@@ -25,7 +25,7 @@ var statLoc;
 var data;
 var adjustable;
 
-var statbg = { top:80, left:20, width:30, height:300}
+var tempbar = { top:80, left:20, width:30, height:300}
 
 var jQT = $.jQTouch({
     statusBar: 'black',
@@ -35,24 +35,55 @@ var jQT = $.jQTouch({
 });
 
 
-var locations;
+// jQuery page initialization
+$(document).ready(function() {
+    showBookmarks()
+    $('#statback').tap(function() {
+        if (timer) { clearInterval(timer); timer=null; }
+        jQT.goBack()
+        return true;
+    })
+    $('#tempbar').click(adjClick)
+    .ajaxError(function(e, xhr, settings, exception) {
+        //alert('in ajaxerror,url:'+settings.url)
+        if (settings.url.indexOf('servlet/stat') == 0) {
+            alert('Error reading status')
+        }
+    })    
+})
 
-function renderLocations(loc) {
-    var nc = $('#navcontent').empty();
+// -------------------------------------
+//       Zone Page
 
-    for (var i in loc) {
-        nc.append($("<li class='arrow' locid='"+loc[i].id+"'>"+ loc[i].display +"</li>"))
+// Click handler for temperature bar
+function adjClick() {
+    if (adjustable) {
+        makeWheel()
+    } else {
+        alert("Setpoint Not Adjustable");
     }
 }
 
-function update(sel, newText) {
-    if (sel.text() != newText) {
-        sel.text(newText)
-    }
+// Triggers refresh of zone values
+function refresh() {
+    $.get('servlet/stat', {loc:statLoc}, function(data) {
+            render(eval(data)[0])
+            //console.log("Stat servlet results")
+        })
 }
 
+// Sets up timer to refresh zone values
+function startRefresh() {
+    if (timer) { clearInterval(timer); timer=null; }
+    timer = setInterval(refresh, 5000)
+}
+
+
+
+// Updates the zone screen with current status
 function render(statPars)
 {
+    // Note that statPar "numeric" fields are all formatted strings, not numbers
     data = statPars;
     data.top = Math.round(Number(data.csp) - Number(data.off) + Number(data.lim) + 1)
     data.bottom = Math.round(Number(data.hsp) - Number(data.off) - Number(data.lim) - 1)
@@ -75,88 +106,39 @@ function render(statPars)
     positionMarker($('#hmark'), (Number(data.hsp) - data.bottom) / range)
     update($('#cmark > span'), statPars.csp)
     update($('#hmark > span'), statPars.hsp)
+    showStat()
 }
 
+// Put marker on the tempBar at specified amount (as fraction of bar height) - 1.0 = top, 0.5 = middle
 function positionMarker(marker, amount) {
-    var markerLeft = statbg.left + statbg.width;
-    var markerTop = statbg.top + statbg.height - (11 / 2) - (statbg.height * amount)
+    var markerLeft = tempbar.left + tempbar.width;
+    var markerTop = tempbar.top + tempbar.height - (11 / 2) - (tempbar.height * amount)
     marker.css({left:markerLeft, top:markerTop})
 }
 
-
-function showBookmarks(afterFunc) {
-    $.post('servlet/bookmark', { 'bookmarks':getBookmarks() }, function(data) {
-        renderLocations(eval(data));
-        $('#navcontent li').click(function(evt) {
-            var id = evt.target.getAttribute('locid');
-            var name = evt.target.innerText
-            var deleteButton = $('.deletebutton');
-            if (deleteButton.size() > 0) {
-                deleteButton.remove();
-            }
-            else {
-                navStat(id, name);
-            }
-        })
-        .swipe( function(evt, info) {
-            if (info.direction == 'right') {
-                showDelete(evt.target)
-            }
-        })
-        .dblclick( function(evt) {
-            showDelete(evt.target)
-        })
-        if (afterFunc) { afterFunc() }
-    })
-}
-
-
-$(document).ready(function() {
-    showBookmarks()
-    $('#statback').click(function() {
-        if (timer) { clearInterval(timer); timer=null; }
-        return true;
-    })
-    $('#statbg').click(adjClick)
-    .ajaxError(function(e, xhr, settings, exception) {
-        //alert('in ajaxerror,url:'+settings.url)
-        if (settings.url.indexOf('servlet/stat') == 0) {
-            alert('Error reading status')
-        }
-    })    
-})
-
-function adjClick() {
-    if (adjustable) {
-        makeWheel()
-    } else {
-        alert("Setpoint Not Adjustable");
+// Replace text in element with new text
+function update(el, newText) {
+    if (el.text() != newText) {
+        el.text(newText)
     }
 }
 
-
-function refresh() {
-    $.get('servlet/stat', {loc:statLoc}, function(data) {
-            render(eval(data)[0])
-        })
+function hideStat() {
+    $('.stathide').css('display','none')
+    $('#current').text("??.?")
 }
 
-function startRefresh() {
-    if (timer) { clearInterval(timer); timer=null; }
-    timer = setInterval(refresh, 5000)
+function showStat() {
+    $('#toplabel').slideDown('fast');
+    $('#cmark').slideDown('fast');
+    $('#bottomlabel').slideDown('fast');
+    $('#hmark').slideDown('fast');
 }
 
-function navStat(location, name) {
-    statLoc = location;
-    $('#stat h1').text(name)
-    $.get('servlet/stat', {loc:location}, function(data) {
-        render(eval(data)[0])
-        startRefresh();
-    })
-    jQT.goTo('#stat', 'slide')    
-}
+// -------------------------------------
+//       Wheel
 
-
+// Show pop-up wheel picker
 function makeWheel() {
     var numbers = new Object();
 
@@ -204,6 +186,46 @@ function makeWheel() {
     });
 
     SpinningWheel.open($('#statbody')[0]);
+}
+
+
+// -------------------------------------
+//       Bookmarks
+
+// Display page w/ list of favorites. This function retrieves data and sets up handlers
+function showBookmarks(afterFunc) {
+    $.post('servlet/bookmark', { 'bookmarks':getBookmarks() }, function(data) {
+        renderLocations(eval(data));
+        $('#navcontent li').click(function(evt) {
+            var id = evt.target.getAttribute('locid');
+            var name = evt.target.innerText
+            var deleteButton = $('.deletebutton');
+            if (deleteButton.size() > 0) {
+                deleteButton.remove();
+            }
+            else {
+                navStat(id, name);
+            }
+        })
+        .swipe( function(evt, info) {
+            if (info.direction == 'right') {
+                showDelete(evt.target)
+            }
+        })
+        .dblclick( function(evt) {
+            showDelete(evt.target)
+        })
+        if (afterFunc) { afterFunc() }
+    })
+}
+
+// Render returned bookmark locations into HTML
+function renderLocations(loc) {
+    var nc = $('#navcontent').empty();
+
+    for (var i in loc) {
+        nc.append($("<li class='arrow' locid='"+loc[i].id+"'>"+ loc[i].display +"</li>"))
+    }
 }
 
 var treeCount = 0;
@@ -296,6 +318,19 @@ function removeBookmark(bookmark) {
     }
     saveBookmarks(currentBookmarks)
 }
+
+// Navigate to a zone
+function navStat(location, name) {
+    hideStat()
+    statLoc = location;
+    $('#stat h1').text(name)
+    $.get('servlet/stat', {loc:location}, function(data) {
+        render(eval(data)[0])
+        startRefresh();
+    })
+    jQT.goTo('#stat', 'slide')
+}
+
 
 function stringToJSONString( stringVal ) {
     return "\"" + stringVal.replace('"', '\\"') + "\""

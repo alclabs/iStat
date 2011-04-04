@@ -57,7 +57,7 @@ response.setHeader("Cache-Control", "no-cache"); %>
             display:none;
         }
 
-        #statbg {
+        #tempbar {
             position:absolute;
             left:20px;
             top:80px;
@@ -131,6 +131,32 @@ response.setHeader("Cache-Control", "no-cache"); %>
             left: 60%;
         }
 
+        /* manual back - if I use normal back style, I can't add a tap event handler */
+        .manback {
+            position: absolute;
+            overflow: hidden;
+            top: 8px;
+            margin: 0;
+            width: auto;
+            height: 30px;
+            line-height: 30px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: rgba(0, 0, 0, 0.5) 0px -1px 0;
+            text-overflow: ellipsis;
+            text-decoration: none;
+            white-space: nowrap;
+            background: none;
+            left: 6px;
+            right: auto;
+            padding: 0;
+            max-width: 55px;
+            border-width: 0 8px 0 14px;
+            -webkit-border-image: url(themes/apple/img/backButton.png) 0 8 0 14;
+        }
+
 
     </style>
     <script type="text/javascript" src="jqtouch/jquery-1.3.2.js"></script>
@@ -140,7 +166,7 @@ response.setHeader("Cache-Control", "no-cache"); %>
     <script type="text/javascript" src="istat.js"></script>
 </head>
 <body>
-
+    <!-- Initial Page - Displays bookmarks -->
     <div id="home">
         <div class="toolbar">
             <h1>iStat</h1>
@@ -149,6 +175,8 @@ response.setHeader("Cache-Control", "no-cache"); %>
         </div>
         <ul id="navcontent" class="edgetoedge"></ul>
     </div>
+
+    <!-- Add bookmark - tree navigaion -->
     <div id="treetemplate">
         <div class="toolbar">
             <h1>Select a location</h1>
@@ -156,19 +184,23 @@ response.setHeader("Cache-Control", "no-cache"); %>
         </div>
         <ul class="edgetoedge"></ul>
     </div>
+
+    <!-- Zone Display Page -->
     <div id="stat">
         <div id="stattool" class="toolbar">
             <h1>iStat</h1>
-            <a id="statback" class="back" href="#">Back</a>
+            <a id="statback" class="manback" href="#">Back</a>
         </div>
         <div id="statbody">
-            <div id="statbg"></div>
+            <div id="tempbar"></div>
             <div id="current"></div>
-            <div id="toplabel" class="scalelable">80</div>
-            <div id="bottomlabel" class="scalelable">60</div>
-            <div id="hmark"><img src="pointleft.png">&nbsp;<span></span></div>
-            <div id="cmark"><img src="pointleft.png">&nbsp;<span></span></div>
+            <div id="toplabel" class="scalelable stathide">80</div>
+            <div id="bottomlabel" class="scalelable stathide">60</div>
+            <div id="hmark" class="stathide"><img src="pointleft.png">&nbsp;<span></span></div>
+            <div id="cmark" class="stathide"><img src="pointleft.png">&nbsp;<span></span></div>
         </div>
+
+        <!-- labels just for debugging - commenting out now
         <div id="labels">
             <p>HSP=<span id="hsp">???</span> </p>
             <p>CSP=<span id="csp">???</span> </p>
@@ -178,6 +210,7 @@ response.setHeader("Cache-Control", "no-cache"); %>
             <p>Time=<span id="time">???</span> </p>
             <p id="statloc"></p>
         </div>
+        -->
     </div>
 </body>
 </html>
