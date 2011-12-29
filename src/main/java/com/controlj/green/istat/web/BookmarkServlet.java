@@ -54,6 +54,9 @@ public class BookmarkServlet extends HttpServlet {
         try {
             writeLocations(out, req.getParameterValues("bookmarks"), req);
         } catch (Exception e) {
+            Logging.LOGGER.println("Unexpected exception:");
+            e.printStackTrace(Logging.LOGGER);
+
             throw new ServletException(e);
         }
         /*
@@ -89,9 +92,8 @@ public class BookmarkServlet extends HttpServlet {
             arrayData.write(writer);
             writer.flush();
         } catch (JSONException e) {
-            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
-            logger.println("Unexpected exception:");
-            logger.println(e);
+            Logging.LOGGER.println("Unexpected exception encoding JSON:");
+            e.printStackTrace(Logging.LOGGER);
         }
     }
 

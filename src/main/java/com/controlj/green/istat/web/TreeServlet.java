@@ -60,6 +60,8 @@ public class TreeServlet extends HttpServlet {
         try {
             writeLevel(out, req.getParameter(LOCATION_PARAM), req);
         } catch (Exception e) {
+            Logging.LOGGER.println("Error getting tree info");
+            e.printStackTrace(Logging.LOGGER);
             throw new ServletException(e);
         }
         out.flush();

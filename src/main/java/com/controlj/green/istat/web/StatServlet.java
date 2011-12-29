@@ -22,8 +22,6 @@
 
 package com.controlj.green.istat.web;
 
-import com.controlj.green.addonsupport.AddOnInfo;
-import com.controlj.green.addonsupport.FileLogger;
 import com.controlj.green.addonsupport.InvalidConnectionRequestException;
 import com.controlj.green.addonsupport.access.*;
 import com.controlj.green.addonsupport.access.aspect.SetPoint;
@@ -116,9 +114,8 @@ public class StatServlet extends HttpServlet {
             arrayData.write(writer);
             writer.flush();
         } catch (JSONException e) {
-            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
-            logger.println("Unexpected exception:");
-            logger.println(e);
+            Logging.LOGGER.println("Unexpected exception:");
+            e.printStackTrace(Logging.LOGGER);
         }        
     }
 

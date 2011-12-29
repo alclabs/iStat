@@ -50,7 +50,9 @@ public class SetPointAdjustServlet extends HttpServlet {
 
         if (location == null || newValue == null)
         {
-            throw new ServletException("Error adjusting setpoint, location or value not set");
+            String msg = "Error adjusting setpoint, location or value not set";
+            Logging.LOGGER.println(msg);
+            throw new ServletException(msg);
         }
 
         writeAdjustment(location, newValue, req);
@@ -75,7 +77,8 @@ public class SetPointAdjustServlet extends HttpServlet {
 
                     if (!hsp.getValidator().isValid(newValue) || !csp.getValidator().isValid(newValue))
                     {
-                        throw new ServletException("Error, trying to set setpoint to invalid value of:"+newValue);
+                        String msg = "Error, trying to set setpoint to invalid value of:" + newValue;
+                        throw new ServletException(msg);
                     }
 
                     csp.set(Float.parseFloat(newValue));
@@ -86,6 +89,7 @@ public class SetPointAdjustServlet extends HttpServlet {
                 }
             });
         } catch (Exception e) {
+            e.printStackTrace(Logging.LOGGER);
             throw new ServletException(e);
         }
     }
