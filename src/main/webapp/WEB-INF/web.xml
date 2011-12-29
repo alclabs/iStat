@@ -39,6 +39,10 @@
         <servlet-class>com.controlj.green.istat.web.StatServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>locations</servlet-name>
+        <servlet-class>com.controlj.green.istat.web.MakeLocations</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>adjust</servlet-name>
         <servlet-class>com.controlj.green.istat.web.SetPointAdjustServlet</servlet-class>
     </servlet>
@@ -54,6 +58,10 @@
     <servlet-mapping>
         <servlet-name>stat</servlet-name>
         <url-pattern>/servlet/stat/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>locations</servlet-name>
+        <url-pattern>/servlet/locations/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>adjust</servlet-name>

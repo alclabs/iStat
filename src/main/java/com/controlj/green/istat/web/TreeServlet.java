@@ -60,9 +60,7 @@ public class TreeServlet extends HttpServlet {
         try {
             writeLevel(out, req.getParameter(LOCATION_PARAM), req);
         } catch (Exception e) {
-            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
-            logger.println("Unexpected exception:");
-            logger.println(e);
+            throw new ServletException(e);
         }
         out.flush();
         /*

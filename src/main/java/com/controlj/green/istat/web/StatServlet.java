@@ -63,9 +63,7 @@ public class StatServlet extends HttpServlet {
             writeStats(out, req.getParameter("loc"), req);
         } catch (Exception e) {
             resp.sendError(500, e.getMessage());
-            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
-            logger.println("Unexpected exception:");
-            logger.println(e);
+            //throw new ServletException(e);
         }
 
         /*

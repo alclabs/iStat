@@ -22,8 +22,6 @@
 
 package com.controlj.green.istat.web;
 
-import com.controlj.green.addonsupport.AddOnInfo;
-import com.controlj.green.addonsupport.FileLogger;
 import com.controlj.green.addonsupport.access.*;
 import com.controlj.green.addonsupport.access.aspect.SetPointAdjust;
 import com.controlj.green.addonsupport.access.util.Acceptors;
@@ -88,9 +86,6 @@ public class SetPointAdjustServlet extends HttpServlet {
                 }
             });
         } catch (Exception e) {
-            FileLogger logger = AddOnInfo.getAddOnInfo().getDateStampLogger();
-            logger.println("Unexpected exception:");
-            logger.println(e);
             throw new ServletException(e);
         }
     }
